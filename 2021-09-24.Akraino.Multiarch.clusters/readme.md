@@ -57,7 +57,7 @@ eksctl create nodegroup  --cluster calico-multi  --name ng-arm64   --nodes 1  --
 
 Apply redis manifest
 ```
-kubectl apply -f redis.yaml
+kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2021-09-24.Akraino.Multiarch.clusters/redis.yaml
 ```
 
 # Benchmarks
