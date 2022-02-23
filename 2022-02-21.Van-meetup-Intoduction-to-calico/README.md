@@ -1,4 +1,5 @@
 # Before we begin
+Install Kind
 
 # Cluster preparation
 
