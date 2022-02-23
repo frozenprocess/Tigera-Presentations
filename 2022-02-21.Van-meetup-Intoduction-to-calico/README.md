@@ -1,29 +1,41 @@
 # Before we begin
-Install Kind
+This tutorial is based on Kind.
+
+Install [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 # Cluster preparation
 
+By default `kind` installs a `CNI` when creating a cluster. you can prevent this by adding the following lines to your cluster configuration file.
 ```
-kind create cluster --config cluster.yml
+networking:
+  disableDefaultCNI: true
 ```
 
+Use the following command to create a cluster.
+```
+kind create cluster --config https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2022-02-21.Van-meetup-Intoduction-to-calico/cluster.yml
+```
+If you checkout the node status you will see both nodes are notReady.
 ```
 kubectl get node | egrep -i ready
 ```
 
+This is because we have no CNI in our cluster.
 ```
 kubectl get node -o yaml | egrep -i cni
 ```
-
+You should see a result similar to this:
 ```
         message:Network plugin returns error: cni plugin not initialized'
         message:Network plugin returns error: cni plugin not initialized'
 ```
-
+# CNI installation
+Now use the `tigera-operator` to install Calico.
 ```
 kubectl create -f https://projectcalico.docs.tigera.io/archive/v3.22/manifests/tigera-operator.yaml
 ```
 
+Now use the following command to instruct the operator about the features that you would like your Calico installation to have.
 ```
 kubectl apply -f -<<EOF
 apiVersion: operator.tigera.io/v1
@@ -57,7 +69,7 @@ Stars is a simple application that can demo policies.
 
 Use the following command to install the stars app:
 ```
-kubectl apply -f stars.yaml
+kubectl apply -f https://projectcalico.docs.tigera.io/archive/v3.22/manifests/stars.yaml
 ```
 
 It takes a bit for stars to be fully deployed on a cluster. Use the following command to verify deployment:
@@ -139,7 +151,7 @@ Use the following command to run a ping from `client` Pod.
 kubectl exec -it deployments/client -n client -- ping -c 4 8.8.8.8
 ```
 Client pod can connect to a remote server.
-
+Now let's do the same thing by using Calico `GlobalNetworkPolicies`.
 
 Remove the default-deny policies.
 ```
@@ -191,7 +203,6 @@ command terminated with exit code 1
 ```
 
 Great we have successfully isolated the Pods.
-
 
 # Shift-left
 
