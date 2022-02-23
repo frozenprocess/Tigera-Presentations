@@ -1,6 +1,6 @@
 # Before we begin
 
-# Cluster prepration
+# Cluster preparation
 
 ```
 kind create cluster --config cluster.yml
@@ -146,7 +146,7 @@ kubectl delete networkpolicy -n client default-deny
 kubectl delete networkpolicy -n stars default-deny
 ```
 
-> **Bonus**: If you check the `ui` you will see nothing changed. It is important to note Calico default behviour is set to `Allow` but when you add a policy this will change to an implicit deny at the end of rules.
+> **Bonus**: If you check the `ui` you will see nothing changed. It is important to note Calico default behaviour is set to `Allow` but when you add a policy this will change to an implicit deny at the end of rules.
 
 # Calico global network policy
 
@@ -189,7 +189,7 @@ PING 8.8.8.8 (8.8.8.8): 56 data bytes
 command terminated with exit code 1
 ```
 
-Great we have succesfully isolated the Pods.
+Great we have successfully isolated the Pods.
 
 
 # Shift-left
@@ -471,7 +471,7 @@ roleRef:
 EOF
 ```
 
-Let's try creating a rule in `clinent namespace:
+Let's try creating a rule in `client` namespace:
 ```
 kubectl --context=stars-member apply -f - <<EOF
 kind: NetworkPolicy
@@ -488,7 +488,7 @@ You should see a result similar to:
 ```
 from server for: "STDIN": networkpolicies.networking.k8s.io "deny-all" is forbidden: User "system:serviceaccount:stars:stars-member" cannot get resource "networkpolicies" in API group "networking.k8s.io" in the namespace "client"
 ```
-Seems like stars team members are not premitted to change client namespace policies.
+Seems like stars team members are not permitted to change client namespace policies.
 
 Create Kubernetes policies to allow flow of traffic.
 ```
