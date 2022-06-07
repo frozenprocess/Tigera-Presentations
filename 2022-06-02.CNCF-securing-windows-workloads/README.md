@@ -4,7 +4,7 @@ These are the preparation steps that were done off-camera.
 
 > If you are using QEMU, make sure vms are running with `-cpu host` argument.
 
-
+You can find the recording [here](https://www.linkedin.com/posts/rramezanpour_cncf-on-demand-webinar-securing-windows-activity-6940078386488778752-kTk5?utm_source=linkedin_share&utm_medium=member_desktop_web)
 
 **Since this is my corner of the GitHub I'm going to do some marketing for myself.**
 If you like an step by step Azure course checkout my [Certified Calico Operator: Azure Expert](https://academy.tigera.io/course/certified-calico-operator-azure-expert/).
