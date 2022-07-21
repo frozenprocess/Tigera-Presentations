@@ -7,5 +7,4 @@ Keep in mind that when `Azure-CNI` is installed in your cluster it will be used 
  
 ## Quick note!
 Heya!
-If you are interested in more benchmarking between dataplanes I would highly suggest that you read [this blog]
-(https://kinvolk.io/blog/2020/12/egress-filtering-benchmark-part-2-calico-and-cilium/).
+If you are interested in more benchmarking between dataplanes I would highly suggest that you read [this blog](https://kinvolk.io/blog/2020/12/egress-filtering-benchmark-part-2-calico-and-cilium/).
