@@ -1,0 +1,9 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: frontend-deny
+spec:
+  order: 20
+  selector: app == 'frontend'
+  types:
+  - Ingress
