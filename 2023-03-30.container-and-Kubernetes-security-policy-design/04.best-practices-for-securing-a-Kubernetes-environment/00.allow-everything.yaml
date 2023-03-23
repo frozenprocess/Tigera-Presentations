@@ -1,0 +1,21 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: final-allow-everything 
+spec:
+  order: 100001
+  ingress:
+  - action: Allow
+  egress:
+  - action: Allow
+---
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: log-everything 
+spec:
+  order: 100000
+  ingress:
+  - action: Log
+  egress:
+  - action: Log

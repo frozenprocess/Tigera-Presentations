@@ -1,0 +1,14 @@
+apiVersion: projectcalico.org/v3  
+kind: GlobalNetworkPolicy
+metadata:
+  name: srcnated-to-kapi
+spec:
+  order: 1000
+  selector: has(k8s-app) && k8s-app in {"calico-node","calico-apiserver","calico-typha"}
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443
