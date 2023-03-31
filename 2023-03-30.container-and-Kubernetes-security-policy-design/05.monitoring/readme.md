@@ -12,7 +12,7 @@ kubectl patch felixconfiguration default --type merge -p '{\"spec\":{\"prometheu
 ```
 
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/01.felix-svc.yaml
+kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/01.felix-svc.yaml
 ```
 
 ```bash
@@ -25,7 +25,7 @@ kubectl patch installation default --type=merge -p '{\"spec\": {\"typhaMetricsPo
 ```
 
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/02.typha-svc.yaml
+kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/02.typha-svc.yaml
 ```
 
 Kubernetes node metrics
@@ -59,11 +59,11 @@ Monitoring all the metrics with Prometheus
 ===
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/03.prometheus-config.yaml
+kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/03.prometheus-config.yaml
 ```
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/04.prometheus-pod.yaml
+kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/05.monitoring/04.prometheus-pod.yaml
 ```
 
 Use the following command and then fire a browser and point it to <a href="http://localhost:9090" target="_blank">http://localhost:9090</a>:

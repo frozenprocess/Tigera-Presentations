@@ -104,7 +104,7 @@ While public container image registries are widely used and provide a convenient
 
 Use the following command to run a new VM to host the `private-repository` for this tutorial:
 ```
-multipass launch -n private-repo -d 60G 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/registry-init.yaml
+multipass launch -n private-repo -d 60G 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/registry-init.yaml
 ```
 
 In Linux use the following commands to extract the `private-repo` IP address:
@@ -174,7 +174,7 @@ Other customizations include configuring the logging level and format, modifying
 
 Use the following command to create an installation resource with the `private-registry` settings:
 ```
-kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/02.container-security/02.custom-resource.yaml
+kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/02.container-security/02.custom-resource.yaml
 ```
 
 Once you have created the installation resource, use the following command to query the Calico installation process:

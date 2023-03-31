@@ -5,9 +5,9 @@ Underlying infrastructure
 
 Use the following command to setup the lab environment:
 ```bash
-multipass launch -n control -c 2 -m 2048M 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/control-init.yaml
-multipass launch -n node1 -c 2 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/node-init.yaml
-multipass launch -n node2 -c 2 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/conf42/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/node-init.yaml
+multipass launch -n control -c 2 -m 2048M 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/control-init.yaml
+multipass launch -n node1 -c 2 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/node-init.yaml
+multipass launch -n node2 -c 2 22.04 --cloud-init https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/01.application-modernization/release/node-init.yaml
 ```
 
 Use the following command to list the multipass instances:
