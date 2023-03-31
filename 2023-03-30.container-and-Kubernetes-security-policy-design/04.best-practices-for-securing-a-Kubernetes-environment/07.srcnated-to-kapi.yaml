@@ -3,7 +3,7 @@ kind: GlobalNetworkPolicy
 metadata:
   name: srcnated-to-kapi
 spec:
-  order: 1000
+  order: 1001
   selector: has(k8s-app) && k8s-app in {"calico-node","calico-apiserver","calico-typha"}
   egress:
   - action: Allow

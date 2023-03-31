@@ -61,7 +61,7 @@ spec:
 ## Preventing a lockout
 As a best practice whenever you are trying to experiment with policies in any environment it is best to implement a `safe-mode` strategy by first explicitly permitting the traffic and then writing your deny rules. This helps to eliminate the chance of accidentally locking yourself out of a cluster if a misconfigured policy is applied.
 
-> **Note:** If you are using powershell use the https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment
+> **Note:** If you following this tutorial on powershell use the https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment
 
 Use the following command to explicitly allow every traffic in and out of your cluster:
 ```
@@ -78,7 +78,7 @@ spec:
   - action: Allow
 EOF
 ```
-> **Note:** If you are using powershell use the https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment
+> **Note:** Policy files can be found in [this](https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment) directory.
 
 It is worth mentioning that to prevent disruption due to a misconfigured policy, Calico implements a fail-safe, which is a policy with a list of essential ports and services that are required for your cluster to function.
 
@@ -97,9 +97,40 @@ Here is the list of ports that are included in the failsafe rule:
 |   6667 |   TCP    |  Inbound & Outbound |             etcd self-hosted service access    |
 
 
-## Default namespaced egress policy
+## Default egress policy for namespaced resources
+
+In Calico, a Workload Endpoint (WEP) is a virtual interface that is automatically assigned to VMs, containers, or other workloads running in a Kubernetes cluster. These interfaces are used to enforce network policies and to route traffic from or to your workloads. This allows the traffic originating from your workloads to be easily manipulated by Kubernetes Network Policies (KNP) or Calico policy resources. Calico also provides a host endpoint (HEP) resource that can be used to enforce a particular network behavior on host networking cards and processes that are running on the host OS.
+
+> **Note:** The default deny in the tutorial is crafted with the assumption that you will be enabling host endpoints policies, which allow for more fine-grained control over network traffic. If you are not interested in using host endpoints policies, you can use <a href="https://docs.tigera.io/calico/latest/network-policy/get-started/kubernetes-default-deny">this</a> example. 
 
 
+Use the following command to restrict workload resources from reaching the internet:
+```
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: deny-app-policy
+spec:
+  order: 1001
+  namespaceSelector: has(projectcalico.org/name)
+  types:
+  - Ingress
+  - Egress
+  egress:
+  - action: Allow
+    protocol: UDP
+    destination:
+      selector: 'k8s-app == "kube-dns"'
+      ports:
+      - 53
+EOF
+```
+
+Traffic 
+
+
+The following image is an illustration for `deny-app-policy`:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -123,13 +154,33 @@ subgraph External resources
 end
 ```
 
-Use the following command to restrict namespaced resources from reaching internet:
-```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/02.deny-app-policy.yaml
-```
+## Workloads to Host OS
 
 
-===
+Use the following command to allow containers communicating with the localhost:
+```
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: allow-containers-access-to-localhost 
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  ingress:
+  - action: Allow
+    destination:
+      nets:
+      - 127.0.0.0/8
+  egress:
+  - action: Allow
+    destination:
+      nets:
+      - 127.0.0.0/8
+EOF
+```
+
+The following image is an illustration for `allow-containers-access-to-localhost`:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -145,11 +196,30 @@ subgraph Cluster
 end
 ```
 
-Use the following command to allow containers communicating with the localhost:
+## Workloads to Kubernetes components
+
+Calico API server talks to the Kubernetes API server since api server is protected by hostendpoint policies global() is required
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/01.container-to-localhost.yaml
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-apiserver-to-kapi
+  namespace: calico-apiserver
+spec:
+  order: 1000
+  selector: 'k8s-app == "calico-apiserver"'
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os)
+      namespaceSelector: global()
+      ports:
+      - 6443
+EOF
 ```
 
+The following image is an illustration for `calico-apiserver-to-kapi`:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -168,9 +238,25 @@ subgraph Cluster
 end
 ```
 
-Calico API server talks to the Kubernetes API server since api server is protected by hostendpoint policies global() is required
+## Workloads in the same namespace
+
+calico-Kubernetes-controller connects to api-server on port 5443
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/03.calico-api-to-kapi.yaml
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-kube-controllers-to-apiserver
+  namespace: calico-system
+spec:
+  order: 1000
+  selector: 'k8s-app == "calico-kube-controllers"'
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: k8s-app == "calico-apiserver"
+EOF
 ```
 
 ```mermaid
@@ -182,11 +268,28 @@ subgraph Control Plane
 end
 ```
 
-calico-Kubernetes-controller connects to api-server on port 5443
+## calico-Kubernetes-controller
+
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/04.calico-kube-controller-to-api.yaml
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: calico-components-to-apiserver
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: 'k8s-app == "calico-apiserver"'
+      ports:
+      - 5443
+EOF
 ```
 
+The following image is an illustration for `calico-components-to-apiserver`:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -205,10 +308,36 @@ subgraph Cluster
 end
 ```
 
+## 
+
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/05.calico-components-to-apiserver.yaml
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: worker-nodes-to-kapi
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443
+  # kube-schudler or other component talking to the local loopback
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443
+EOF
 ```
 
+The following image is an illustration for `worker-nodes-to-kapi` policy:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -223,11 +352,27 @@ subgraph Cluster
 end
 ```
 
-Workers communication to Control PLane and Kubernetes API server
+
+## 
+
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/06.worker-nodes-to-kapi.yaml
+apiVersion: projectcalico.org/v3  
+kind: GlobalNetworkPolicy
+metadata:
+  name: srcnated-to-kapi
+spec:
+  order: 1000
+  selector: has(k8s-app) && k8s-app in {"calico-node","calico-apiserver","calico-typha"}
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443
 ```
 
+The following image is an illustration for `srcnated-to-kapi` policy:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -242,11 +387,38 @@ subgraph Cluster
 end
 ```
 
-targeting srcnat traffic
+## 
+
+
+Calico typha rules
 ```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/07.srcnated-to-kapi.yaml
+kubectl create -f -<<EOF
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: worker-nodes-to-typha
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 5473
+  # kube-schudler or other component talking to the local loopback
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 5473
+EOF
 ```
 
+The following image is an illustration for `worker-nodes-to-typha` policy:
 ```mermaid
 flowchart LR
 subgraph Cluster
@@ -260,30 +432,11 @@ subgraph Cluster
 end
 ```
 
-Calico typha rules
-```
-kubectl create -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/08.worker-nodes-to-typha.yaml
-```
-
-
 Private registry
 ===
 
-```mermaid
-flowchart 
-subgraph cluster
-    A[control]
-    B[node1...n]
-end
-subgraph External resources
-    A[control] -->|egress\nTCP 5000| Z[private-repo\nBy IP]
-    B[node1...n] -->|egress\nTCP 5000| Z[private-repo\nBy IP]
-
-    Z[private-repo\nBy IP]
-end
 ```
-
-```
+kubectl create -f -<<EOF
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 metadata:
@@ -298,7 +451,25 @@ spec:
       - $REGISTRY_IP/32
       ports:
       - 5000
+EOF
 ```
+
+The following image is an illustration for `private-registry-policy` policy:
+```mermaid
+flowchart 
+subgraph cluster
+    A[control]
+    B[node1...n]
+end
+subgraph External resources
+    A[control] -->|egress\nTCP 5000| Z[private-repo\nBy IP]
+    B[node1...n] -->|egress\nTCP 5000| Z[private-repo\nBy IP]
+
+    Z[private-repo\nBy IP]
+end
+```
+
+
 
 Enabling HostEndpoint
 ===

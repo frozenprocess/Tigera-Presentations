@@ -3,7 +3,7 @@ kind: GlobalNetworkPolicy
 metadata:
   name: allow-containers-access-to-localhost 
 spec:
-  order: 1000
+  order: 1001
   selector: has(kubernetes.io/os)
   ingress:
   - action: Allow

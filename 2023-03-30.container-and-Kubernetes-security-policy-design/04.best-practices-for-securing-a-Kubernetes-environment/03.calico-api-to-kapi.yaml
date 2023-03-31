@@ -4,7 +4,7 @@ metadata:
   name: calico-apiserver-to-kapi
   namespace: calico-apiserver
 spec:
-  order: 1000
+  order: 1001
   selector: 'k8s-app == "calico-apiserver"'
   egress:
   - action: Allow

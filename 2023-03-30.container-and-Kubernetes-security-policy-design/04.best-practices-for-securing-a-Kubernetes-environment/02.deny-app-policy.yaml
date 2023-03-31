@@ -3,7 +3,7 @@ kind: GlobalNetworkPolicy
 metadata:
   name: deny-app-policy
 spec:
-  order: 1000
+  order: 1001
   namespaceSelector: has(projectcalico.org/name)
   types:
   - Ingress

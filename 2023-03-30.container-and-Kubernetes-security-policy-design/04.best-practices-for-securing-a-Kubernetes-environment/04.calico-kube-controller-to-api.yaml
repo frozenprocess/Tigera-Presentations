@@ -4,7 +4,7 @@ metadata:
   name: calico-kube-controllers-to-apiserver
   namespace: calico-system
 spec:
-  order: 1000
+  order: 1001
   selector: 'k8s-app == "calico-kube-controllers"'
   egress:
   - action: Allow
