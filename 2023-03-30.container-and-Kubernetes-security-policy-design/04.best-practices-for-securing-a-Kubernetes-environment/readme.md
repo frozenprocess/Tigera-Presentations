@@ -261,9 +261,11 @@ EOF
 
 ```mermaid
 flowchart LR
-subgraph Control Plane
-    subgraph a[calico-system]
-        A["Pods\nk8s-app == calico-kube-controllers"] -->|egress\nTCP exposed port/s| B["Pods\nk8s-app == calico-apiserver"]
+subgraph Cluster
+    subgraph Control Plane
+        subgraph a[calico-system]
+            A["Pods\nk8s-app == calico-kube-controllers"] -->|egress\nTCP exposed port/s| B["Pods\nk8s-app == calico-apiserver"]
+        end
     end
 end
 ```
@@ -474,10 +476,12 @@ end
 Enabling HostEndpoint
 ===
 
+Use the following command to enable host endpoint policies.
 ```bash
 kubectl patch kubecontrollersconfiguration default --type=merge --patch='{"spec": {"controllers": {"node": {"hostEndpoint": {"autoCreate": "Enabled"}}}}}'
 ```
 
+If you are following the tutorial on Windows use the following command in PowerShell: 
 ```powershell
 kubectl patch kubecontrollersconfiguration default --type=merge --patch='{\"spec\": {\"controllers\": {\"node\": {\"hostEndpoint\": {\"autoCreate\": \"Enabled\"}}}}}'
 ```
@@ -485,6 +489,7 @@ kubectl patch kubecontrollersconfiguration default --type=merge --patch='{\"spec
 Default deny
 ===
 
+Use the following command to drop every communication that has not been explicitly allowed:
 ```
 kubectl delete -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment/00.allow-everything.yaml
 ```
