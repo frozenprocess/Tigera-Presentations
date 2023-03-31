@@ -1,0 +1,17 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: allow-containers-access-to-localhost 
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  ingress:
+  - action: Allow
+    destination:
+      nets:
+      - 127.0.0.0/8
+  egress:
+  - action: Allow
+    destination:
+      nets:
+      - 127.0.0.0/8

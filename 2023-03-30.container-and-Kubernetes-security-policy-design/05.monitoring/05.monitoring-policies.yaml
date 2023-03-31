@@ -1,0 +1,91 @@
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-kube-controllers-to-apiserver
+  namespace: calico-monitoring
+spec:
+  order: 1000
+  egress:
+  - action: Allow
+    destination:
+      services:
+        name: felix-metrics-svc
+        namespace: calico-system
+  - action: Allow
+    destination:
+      services:
+        name: typha-metrics-svc
+        namespace: calico-system
+  - action: Allow
+    destination:
+      services:
+        name: prometheus-node-exporter
+        namespace: calico-monitoring
+  - action: Allow
+    destination:
+      services:
+        name: calico-kube-controllers-metrics
+        namespace: calico-system
+---
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-kube-controllers-to-apiserver
+  namespace: calico-monitoring
+spec:
+  order: 1000
+  selector: 'app == "prometheus-pod"'
+  egress:
+  - action: Allow
+    destination:
+      services:
+        name: felix-metrics-svc
+        namespace: calico-system
+---
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: prometheus-to-local
+spec:
+  order: 1000
+  selector: has(kubernetes.io/os)
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os)
+      ports:
+      - 9100
+      - 9091
+      - 9093
+  # kube-schudler or other component talking to the local loopback
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os)
+      ports:
+      - 9100
+---
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: prometheus-to-kapi
+spec:
+  order: 1000
+  selector: 'app == "prometheus-pod"'
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443
+  # kube-schudler or other component talking to the local loopback
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
+      ports:
+      - 6443

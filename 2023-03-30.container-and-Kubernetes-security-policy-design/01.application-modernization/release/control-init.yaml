@@ -1,0 +1,52 @@
+package_update: true
+packages:
+  - conntrack
+users:
+  - default
+disable_root: false
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCvW2dRLu0PLQeQ5q5X76RaPvh8/lhhTzucdOizgzJfbUClve4KVCivtB1/S0rX6uuZL6TZhtRDrB1bVGAkwnt6zTT/irQ1ly1AseLAGIdA+03ikQ4gD1hL+MPURko4O9qWyDpBzPtjinRkXYTPdDe3g5jj1CZMI8uw+oOwdxf/9efeEfiQZ+pZuqgtEJttxWx3NrLqiyZhiciSVoRxyXkOltMdovzNeeeRB0KkFKhjSWhjTW0QRJ19ZsDtH3lxChQd7YFfTtYL0oe3ZkRINzHwfr1vzTVaolWTF70H4LWFaTZpmFWZ+WmmXNriUHwov2TBsCYRMAJkM72PAi8WmtWR calico@cloud
+ca_certs:
+  trusted:
+    - registry_ca_crt
+    - |
+      -----BEGIN CERTIFICATE-----
+      MIIDWzCCAkOgAwIBAgIUfEknUwNQpMY7TBE3M8Fsq0RCBVUwDQYJKoZIhvcNAQEL
+      BQAwPTEVMBMGA1UEAwwMcHJpdmF0ZS1yZXBvMRcwFQYDVQQKDA5XZSBsb3ZlIENh
+      bGljbzELMAkGA1UEBhMCVVMwHhcNMjMwMzI1MTgyMzA3WhcNMjYwMTEyMTgyMzA3
+      WjA9MRUwEwYDVQQDDAxwcml2YXRlLXJlcG8xFzAVBgNVBAoMDldlIGxvdmUgQ2Fs
+      aWNvMQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+      ALmidS3N58K25Qyp91lCWnTNwwFqnK6Ey7hsTrO+Nzj6i5fCdHjgg8As9zrw4SCu
+      rcLsVkPQdtKuVATol/k9/DcDbc4kVTop59E2hGKID/oHbo7VXSjTvPKSnrhlWiNF
+      75Or0PqEWqO/+peIg2PteUhnNgP+G7HnJY6zVQh+TzNir9v315Of/lfiYo7tmMX+
+      S84uPoIiBHR3VC7Ma7IC6jotjWIFNqjvgO7guErIrYPN0u6VQy1GAK5LmbYuGEl1
+      SsJnsNptHPFkudjPajGy6+Vph/Uqmki2C9i5C3Ds7+NKoWZrKpWvkY7teIMonnUp
+      Sr6ZsrQqzZDS9il2PimnYNcCAwEAAaNTMFEwHQYDVR0OBBYEFG76GfV4CXPPjilh
+      ITjE0Rg0bZ6EMB8GA1UdIwQYMBaAFG76GfV4CXPPjilhITjE0Rg0bZ6EMA8GA1Ud
+      EwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAF9rOseF06FaRUOqWDXqr6IW
+      osgoZsbM9AbW2Z9S/2cz3BJrllbhiWPQGSCCFGoFO4VnS1O+FWczj3o/IdZ1idhg
+      JCCVW+/hhgKStY7PN4RKBuSwXipr/ZwHrb2eXHZWPf74tpdFnnqK0zh6k+//kR6V
+      ao/My7a3/HIJm/pG3Qyju/gTlXVDsFfy9gK+NjtocsHK8L0M9l3IAGyPYCPIsIxV
+      0PRIjWHOszcJybNbb/muI0SfuqEiSFAo2utprEbegG6NV3xIAh6aulZgCQ2HW9yE
+      1oq6jlNn2UUP1Xt9t68ijGb3qCoR3Az7uVXF9PvopWr8/7n2iM+QxiUV6qmwQzc=
+      -----END CERTIFICATE-----
+write_files:
+- encoding: b64
+  content: IyEvYmluL2Jhc2gKQVJDSD1gdW5hbWUgLW1gCmlmIFtbICRBUkNIID09ICJ4ODZfNjQiIF1dCnRoZW4KZWNobyAiRG93bmxvYWRpbmcgazNzIGJpbmFyeSBmb3IgJEFSQ0giCi91c3IvYmluL2N1cmwgLUwgaHR0cHM6Ly9naXRodWIuY29tL2szcy1pby9rM3MvcmVsZWFzZXMvZG93bmxvYWQvdjEuMjMuMTYlMkJrM3MxL2szcyAtbyAvdXNyL2xvY2FsL2Jpbi9rM3MKZWNobyAiRG93bmxvYWRpbmcgY2FsaWNvY3RsIGJpbmFyeSAkQVJDSCIKL3Vzci9iaW4vY3VybCAtTCBodHRwczovL2dpdGh1Yi5jb20vcHJvamVjdGNhbGljby9jYWxpY28vcmVsZWFzZXMvbGF0ZXN0L2Rvd25sb2FkL2NhbGljb2N0bC1saW51eC1hbWQ2NCAtbyAvdXNyL2xvY2FsL2Jpbi9jYWxpY29jdGwKZWxzZQplY2hvICJEb3dubG9hZGluZyBrM3MgYmluYXJ5IGZvciAkQVJDSCIKL3Vzci9iaW4vY3VybCAtTCBodHRwczovL2dpdGh1Yi5jb20vazNzLWlvL2szcy9yZWxlYXNlcy9kb3dubG9hZC92MS4yMy4xNiUyQmszczEvazNzLWFybTY0IC1vIC91c3IvbG9jYWwvYmluL2szcwplY2hvICJEb3dubG9hZGluZyBjYWxpY29jdGwgYmluYXJ5ICRBUkNIIgovdXNyL2Jpbi9jdXJsIC1MIGh0dHBzOi8vZ2l0aHViLmNvbS9wcm9qZWN0Y2FsaWNvL2NhbGljby9yZWxlYXNlcy9sYXRlc3QvZG93bmxvYWQvY2FsaWNvY3RsLWxpbnV4LWFybTY0IC1vIC91c3IvbG9jYWwvYmluL2NhbGljb2N0bApmaQoKL3Vzci9iaW4vY2htb2QgK3ggL3Vzci9sb2NhbC9iaW4vazNzCi91c3IvYmluL2NobW9kICt4IC91c3IvbG9jYWwvYmluL2NhbGljb2N0bCAKCi91c3IvYmluL2N1cmwgaHR0cHM6Ly9nZXQuazNzLmlvLyA+IC9yb290L2luc3RhbGwuc2gKL3Vzci9iaW4vY2htb2QgK3ggL3Jvb3QvaW5zdGFsbC5zaAoKIyBNYWMgT1MgZGlzY292ZXJ5IGZpeApjYXQgPj4gL2V0Yy9zeXN0ZW1kL3Jlc29sdmVkLmNvbmYgPDwtRU9GCk11bHRpY2FzdEROUz15ZXMKRG9tYWlucz1tdWx0aXBhc3MgbXNob21lLm5ldCBsb2NhbApFT0YKL3Vzci9iaW4vc3lzdGVtY3RsIGVuYWJsZSBzeXN0ZW1kLXJlc29sdmVkLnNlcnZpY2UKL3Vzci9iaW4vc3lzdGVtY3RsIHJlc3RhcnQgc3lzdGVtZC1yZXNvbHZlZC5zZXJ2aWNlCgpjYXQgPiAvZXRjL3N5c3RlbWQvc3lzdGVtL21kbnNALnNlcnZpY2UgPDwtRU9GCltTZXJ2aWNlXQpUeXBlPW9uZXNob3QKRXhlY1N0YXJ0PS91c3IvYmluL3Jlc29sdmVjdGwgbWRucyAlaSB5ZXMKQWZ0ZXI9c3lzLXN1YnN5c3RlbS1uZXQtZGV2aWNlcy0laS5kZXZpY2UKCltJbnN0YWxsXQpXYW50ZWRCeT1zeXMtc3Vic3lzdGVtLW5ldC1kZXZpY2VzLSVpLmRldmljZQpFT0YKCi91c3IvYmluL3N5c3RlbWN0bCBlbmFibGUgbWRuc0BlbnAwczEuc2VydmljZQovdXNyL2Jpbi9zeXN0ZW1jdGwgc3RhcnQgbWRuc0BlbnAwczEuc2VydmljZQojIE1hYyBPUyBkaXNjb3ZlcnkgZml4Cg==
+  owner: root:root
+  path: /root/prepare.sh
+- encoding: b64
+  content: IyEvYmluL2Jhc2gKCklOU1RBTExfSzNTX1NLSVBfRE9XTkxPQUQ9dHJ1ZSBLM1NfS1VCRUNPTkZJR19NT0RFPSI2NDQiIElOU1RBTExfSzNTX0VYRUM9Ii0tZmxhbm5lbC1iYWNrZW5kPW5vbmUgLS1jbHVzdGVyLWNpZHI9MTcyLjE2LjAuMC8xNiAtLWRpc2FibGUtbmV0d29yay1wb2xpY3kgLS1kaXNhYmxlPXRyYWVmaWssbG9jYWwtc3RvcmFnZSxtZXRyaWNzLXNlcnZlcixzZXJ2aWNlbGIiIC9yb290L2luc3RhbGwuc2gK
+  owner: root:root
+  path: /root/control.sh
+
+runcmd:
+  - [ /usr/bin/chmod, +x, /root/prepare.sh ]
+  - [ /root/prepare.sh ]
+  - [ /usr/bin/chmod, +x, /root/control.sh ]
+  - [ /root/control.sh ]
+  - [ /usr/bin/chown, -R, ubuntu:ubuntu, /home/ubuntu ]
+  - [ /usr/bin/systemctl, enable, k3s.service ]
+
+power_state:
+  mode: reboot

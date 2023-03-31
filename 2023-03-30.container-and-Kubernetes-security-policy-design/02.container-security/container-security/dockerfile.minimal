@@ -1,0 +1,14 @@
+FROM golang:alpine AS builder
+
+WORKDIR /app
+
+COPY src/main.go /app/
+
+RUN go mod init secure
+RUN go build -o /app/main
+
+FROM scratch
+
+COPY --from=builder /app/main /app/main
+
+CMD ["/app/main"]

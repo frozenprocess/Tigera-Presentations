@@ -1,0 +1,16 @@
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-apiserver-to-kapi
+  namespace: calico-apiserver
+spec:
+  order: 1000
+  selector: 'k8s-app == "calico-apiserver"'
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: has(kubernetes.io/os)
+      namespaceSelector: global()
+      ports:
+      - 6443

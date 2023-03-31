@@ -1,0 +1,13 @@
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: calico-kube-controllers-to-apiserver
+  namespace: calico-system
+spec:
+  order: 1000
+  selector: 'k8s-app == "calico-kube-controllers"'
+  egress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: k8s-app == "calico-apiserver"
