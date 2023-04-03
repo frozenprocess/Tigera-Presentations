@@ -44,7 +44,7 @@ Use the following command to check the image vulnerabilities:
 tigera-scanner scan container-security/test-image:minimal
 ```
 
-In this section we've used the Tigera-scanner to issue a simple scan on two images. It is worth noting that Tigera-scanner has a lot more capabilities and its full potential can be unlocked by using <a href="https://www.calicocloud.io/home" target="_blank">Calico Cloud</a>.
+In this section we've used the Tigera-scanner to issue a simple scan on two images. It is worth noting that Tigera-scanner has a lot more capabilities and its full potential can be unlocked by using [Calico Cloud](https://www.calicocloud.io/home).
 
 <img src="https://www.calicocloud.io/static/media/screen-prod-info-ia.97827030045a13f2de75.png" alt="Calico Cloud" height="500rm">
 
@@ -109,7 +109,7 @@ multipass launch -n private-repo -d 60G 22.04 --cloud-init https://raw.githubuse
 
 In Linux use the following commands to extract the `private-repo` IP address:
 ```bash
-OPERATOR_VERSION="v3.25.0"
+CALICO_VERSION="v3.25.0"
 REGISTRY_IP=$(multipass list --format csv | egrep private-repo | cut -d, -f3)
 REGISTRY=$REGISTRY_IP:5000
 ```
@@ -121,7 +121,12 @@ $REGISTRY_IP = (multipass list --format csv | Select-String private-repo | ForEa
 $REGISTRY=$REGISTRY_IP+":5000"
 ```
 
-Keep in mind that $REGISTRY https://docs.docker.com/registry/insecure/
+> **Note:** You will only need to add the private-registry IP address to your workstation docker configurations, all multipass instances are already configured with the expected certificate information.
+
+When you use a container runtime environment such as Docker, it is important to ensure that your private registry is secured using SSL/TLS. However, if you are using a self-signed or insecure registry, you may encounter issues with pulling images or pushing images to the registry. In order to use an insecure registry with Docker, you must add the IP address of the registry to the Docker daemon's list of insecure registries. This can be done by adding the registry's IP address to the insecure-registries section of the Docker daemon configuration file (/etc/docker/daemon.json on Linux systems).
+
+It is important to note that using an insecure registry can be a security risk, as it allows unencrypted communication between the Docker client and the registry. Therefore, it is recommended to use a self-signed registry only for testing or development purposes, and to secure any production registries using SSL/TLS. If you like to know more about self-signed configurations click [here](https://docs.docker.com/registry/insecure/)
+
 
 Use the following commands to push the required images to the lab private registry:
 ```
@@ -170,7 +175,7 @@ In addition to these core configurations, there are several other configurations
 ```
 Other customizations include configuring the logging level and format, modifying the IP pools used by Calico, and enabling various features and plugins. By customizing these configurations, you can tailor Calico to meet the specific requirements of your environment.
 
-> **Note:** More details about registry and installation settings can be found <a href="https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.Installation" target="_blank">here</a>.
+> **Note:** More details about registry and installation settings can be found [here](https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.Installation).
 
 Use the following command to create an installation resource with the `private-registry` settings:
 ```
