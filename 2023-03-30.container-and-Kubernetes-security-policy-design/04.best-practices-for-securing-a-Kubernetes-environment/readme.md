@@ -1,5 +1,5 @@
-# Policy design
-
+Policy design
+===
 Kubernetes provides a framework for defining and applying policies to your cluster, but it is up to the administrator to create and enforce those policies. However, on its own, Kubernetes doesn't enforce these policies, and it delegates this to the container networking interface (CNI) plugin. 
 
 One of the key default behaviors in Kubernetes is that all pods are allowed to communicate with each other by default. This means that if a pod is running a vulnerable application, other pods in the same cluster may also be at risk. To mitigate this risk, it is recommended to create network policies that restrict the traffic between pods based on their labels. However, this behavior changes to a default deny the moment that you add a policy to your cluster. When a network policy is added to a Kubernetes cluster, it overrides the default allow-all behavior and enforces the rules (with the help of your CNI) defined in the policy. This means that if a pod tries to communicate with another pod that is not explicitly allowed by the policy, the communication will be denied.
@@ -51,12 +51,9 @@ In a scenario where you have multiple Calico policies without an order number or
 
 For example, if you have two un-ordered policies named `alpha` and `zulu`, the policy engine will first evaluate and enforce the policy named `alpha` and then the policy named `zulu`.
 
-#### The Log rule
-One thing worth mentioning is a Log policy and its affect on the behavior that we explored. A log policy changes the 
-```
-spec:
-  order: 1
-```
+#### The Log exception
+Calico allows you to create iptable log rules to log packets that match certain criteria. These log rules can be assigned an order number like other policies, but it is important to note that the policy that comes after a log rule will be the final decider and no other policies will be evaluated. Therefore, you should ensure that the policy after a log rule is configured correctly to avoid unintended consequences. 
+
 
 ## Preventing a lockout
 As a best practice whenever you are trying to experiment with policies in any environment it is best to implement a `safe-mode` strategy by first explicitly permitting the traffic and then writing your deny rules. This helps to eliminate the chance of accidentally locking yourself out of a cluster if a misconfigured policy is applied.
@@ -78,7 +75,7 @@ spec:
   - action: Allow
 EOF
 ```
-> **Note:** Policy files can be found in [this](https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment) directory.
+> **Note:** If you are following this tutorial with PowerShell use the policy files in [this](https://github.com/frozenprocess/Tigera-Presentations/tree/master/2023-03-30.container-and-Kubernetes-security-policy-design/04.best-practices-for-securing-a-Kubernetes-environment) directory to create the rules.
 
 It is worth mentioning that to prevent disruption due to a misconfigured policy, Calico implements a fail-safe, which is a policy with a list of essential ports and services that are required for your cluster to function.
 
@@ -97,11 +94,11 @@ Here is the list of ports that are included in the failsafe rule:
 |   6667 |   TCP    |  Inbound & Outbound |             etcd self-hosted service access    |
 
 
-## Default egress policy for namespaced resources
-
+Default egress policy for namespaced resources
+===
 In Calico, a Workload Endpoint (WEP) is a virtual interface that is automatically assigned to VMs, containers, or other workloads running in a Kubernetes cluster. These interfaces are used to enforce network policies and to route traffic from or to your workloads. This allows the traffic originating from your workloads to be easily manipulated by Kubernetes Network Policies (KNP) or Calico policy resources. Calico also provides a host endpoint (HEP) resource that can be used to enforce a particular network behavior on host networking cards and processes that are running on the host OS.
 
-> **Note:** The default deny in the tutorial is crafted with the assumption that you will be enabling host endpoints policies, which allow for more fine-grained control over network traffic. If you are not interested in using host endpoints policies, you can use <a href="https://docs.tigera.io/calico/latest/network-policy/get-started/kubernetes-default-deny">this</a> example. 
+> **Note:** The default deny in the tutorial is crafted with the assumption that you will be enabling host endpoints policies, which allow for more fine-grained control over network traffic. If you are not interested in using host endpoints policies, you can use <a href="https://docs.tigera.io/calico/latest/network-policy/get-started/kubernetes-default-deny" target="_blank">this</a> example. 
 
 
 Use the following command to restrict workload resources from reaching the internet:
@@ -127,9 +124,6 @@ spec:
 EOF
 ```
 
-Traffic 
-
-
 The following image is an illustration for `deny-app-policy`:
 ```mermaid
 flowchart LR
@@ -154,8 +148,8 @@ subgraph External resources
 end
 ```
 
-## Workloads to Host OS
-
+Workloads to Host OS
+===
 
 Use the following command to allow containers communicating with the localhost:
 ```
@@ -196,9 +190,10 @@ subgraph Cluster
 end
 ```
 
-## Workloads to Kubernetes components
+Workloads to Kubernetes components
+===
 
-Calico API server talks to the Kubernetes API server since api server is protected by hostendpoint policies global() is required
+Calico API server talks to the Kubernetes API server since api server is protected by host endpoint policies global() is required
 ```
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
@@ -238,7 +233,8 @@ subgraph Cluster
 end
 ```
 
-## Workloads in the same namespace
+Workloads in the same namespace
+===
 
 calico-Kubernetes-controller connects to api-server on port 5443
 ```
@@ -267,10 +263,16 @@ subgraph Cluster
             A["Pods\nk8s-app == calico-kube-controllers"] -->|egress\nTCP exposed port/s| B["Pods\nk8s-app == calico-apiserver"]
         end
     end
+    subgraph Node A...N
+        subgraph c[calico-system]
+            D["Pods\nk8s-app == calico-kube-controllers"] -->|egress\nTCP exposed port/s| E["Pods\nk8s-app == calico-apiserver"]
+        end
+    end
 end
 ```
 
-## calico-Kubernetes-controller
+calico-Kubernetes-controller
+===
 
 ```
 kubectl create -f -<<EOF
@@ -310,7 +312,8 @@ subgraph Cluster
 end
 ```
 
-## 
+Nodes communication to Kubernetes API server
+===
 
 ```
 kubectl create -f -<<EOF
@@ -328,7 +331,7 @@ spec:
       selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
       ports:
       - 6443
-  # kube-schudler or other component talking to the local loopback
+  # kube-scheduler or other component talking to the local loopback
   egress:
   - action: Allow
     protocol: TCP
@@ -355,7 +358,8 @@ end
 ```
 
 
-## 
+Calico-components to Kubernetes API server
+===
 
 ```
 apiVersion: projectcalico.org/v3  
@@ -389,8 +393,8 @@ subgraph Cluster
 end
 ```
 
-## 
-
+Calico Typha communication to and from Kubernetes API server
+===
 
 Calico typha rules
 ```
@@ -409,7 +413,7 @@ spec:
       selector: has(kubernetes.io/os) && kubernetes.io/hostname == "control"
       ports:
       - 5473
-  # kube-schudler or other component talking to the local loopback
+  # kube-scheduler or other component talking to the local loopback
   egress:
   - action: Allow
     protocol: TCP
@@ -434,7 +438,7 @@ subgraph Cluster
 end
 ```
 
-Private registry
+External IPset and IP CIDR
 ===
 
 ```

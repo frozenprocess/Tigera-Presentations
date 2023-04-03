@@ -174,7 +174,28 @@ Other customizations include configuring the logging level and format, modifying
 
 Use the following command to create an installation resource with the `private-registry` settings:
 ```
-kubectl apply -f https://raw.githubusercontent.com/frozenprocess/Tigera-Presentations/master/2023-03-30.container-and-Kubernetes-security-policy-design/02.container-security/02.custom-resource.yaml
+kubectl apply -f -<<EOF
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  registry: private-repo:5000/
+  calicoNetwork:
+    bgp: Disabled
+    ipPools:
+    - blockSize: 26
+      cidr: 172.16.0.0/16
+      encapsulation: VXLANCrossSubnet
+      natOutgoing: Enabled
+      nodeSelector: all()
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer 
+metadata: 
+  name: default 
+spec: {}
+EOF
 ```
 
 Once you have created the installation resource, use the following command to query the Calico installation process:
