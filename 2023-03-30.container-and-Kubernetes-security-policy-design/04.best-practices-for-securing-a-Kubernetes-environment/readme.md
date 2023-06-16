@@ -4,8 +4,9 @@ Kubernetes provides a framework for defining and applying policies to your clust
 
 One of the key default behaviors in Kubernetes is that all pods are allowed to communicate with each other by default. This means that if a pod is running a vulnerable application, other pods in the same cluster may also be at risk. To mitigate this risk, it is recommended to create network policies that restrict the traffic between pods based on their labels. However, this behavior changes to a default deny the moment that you add a policy to your cluster. When a network policy is added to a Kubernetes cluster, it overrides the default allow-all behavior and enforces the rules (with the help of your CNI) defined in the policy. This means that if a pod tries to communicate with another pod that is not explicitly allowed by the policy, the communication will be denied.
 
-### Policy structure
+## Policy structure and predefined attributes
 
+### Policy header & kind
 ```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -20,15 +21,31 @@ kind: NetworkPolicy
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
 ```
+### Policy types
 
-### Rules
-Each policy can contain one or more rule, these rules can affect traffics that are incoming `ingress` or outgoing `egress`.
-
-An ingress rule example:
 ```
 spec:
-  selector:
-  namespaceSelector:
+  types:
+  - Ingress
+  - Egress
+```
+
+### Rules
+Each policy can contain one or more rule, and these rules can affect incoming `ingress` or outgoing `egress` traffic behavior of an endpoint (more about endpoints later). 
+
+The following example is a rule that affects ingress traffic:
+```
+spec:
+  ingress:
+    destination:
+      selector: has(some-label)
+```
+
+### Selectors
+Both Kubernetes NetworkPolicy and Calico policies offer multiple selectors that can be used together to explicitly identify and affect a traffic flow.
+
+```
+
 ```
 
 ## Policy precedence
@@ -48,25 +65,47 @@ spec:
 ```
 
 #### Kubernetes policy precedence
-When you create a Kubernetes NetworkPolicy (KNP) and a Calico policy in the same cluster, Calico will automatically assign the KNP a default order number of `1000` since Kubernetes policy resources do not provide an explicit way to set the order of policy evaluation and enforcement.
+When you create a Kubernetes NetworkPolicy and a Calico policy in the same cluster, Calico will automatically assign the KNP a default order number of `1000` since Kubernetes policy resources do not provide an explicit way to set the order of policy evaluation and enforcement.
 
 If you want the KNP to be evaluated and enforced before any Calico policies, you will need to set the order number of your Calico policy to a value higher than `1000`. For example, you can set the order number of your Calico policy to `1001` or higher to ensure that it is evaluated and enforced after the KNP.
 
 > **Note:** It is important to carefully manage policy order in Calico to ensure that your policies are evaluated and enforced correctly in your Kubernetes cluster.
 
 
-#### Calico un-ordered policies
-You might now be wondering what happens when a Calico policy is created with an un-deified order number?
+#### Calico unordered policies
+You might now be wondering what happens when a Calico policy is created with an undefined order number?
 In such a case Calico policies will automatically have an order number equal to infinity, and if you have two or more of these policies the tie breaker rule will apply to determine their priority.
 
 #### The tie breaker rule
-In a scenario where you have multiple Calico policies without an order number or with the same order number, Calico policy engine will use their name as a tiebreaker to determine the order of policy evaluation and enforcement.
+In a scenario where you have multiple Calico policies without an order number or with the equal order numbers, Calico policy engine will compare the policy names as a tiebreaker to determine the order of policy evaluation and enforcement.
 
-For example, if you have two un-ordered policies named `alpha` and `zulu`, the policy engine will first evaluate and enforce the policy named `alpha` and then the policy named `zulu`, or if you have two policies named `aac` and `aab` policy `aab` will be evaluated first. Keep in mind that 
+For example, if you have two unordered policies named `alpha` and `zulu`, the policy engine will first evaluate and enforce the policy named `alpha` and then the policy named `zulu`, or if you have two policies named `aac` and `aab` policy `aab` will be evaluated first.
 
 #### The Log exception
-Calico allows you to create iptable log rules to log packets that match certain criteria. These log rules can be assigned an order number like other policies, but it is important to note that the policy that comes after a log rule will be the final decider and no other policies will be evaluated. Therefore, you should ensure that the policy after a log rule is configured correctly to avoid unintended consequences. 
+Calico allows you to create iptables log rules to log packets that match certain criteria. These log rules can be written inside Calico Policy resources and These log policies can be assigned an order number, but it is important to note that the rule that comes after a log action will be the final decider and no other rule will be evaluated in that policy. Therefore, you should ensure that the policy after a log rule is configured correctly to avoid unintended consequences. 
 
+In the following example, after logging the flow with `some-label` annotation, this policy would also allow flows that are incoming from a source that is annotated with the `block=one` label but the second allow will not take effect since this policy starts with a `Log` action and that particular flow might be denied by the other policies.
+```
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: log-everything 
+spec:
+  order: 100000
+  ingress:
+  - action: Log
+    selector: has(some-label)
+
+  - action: Allow
+    selector: has(some-label)
+    source: 
+      selector: blockone == "one"
+
+  - action: Allow
+    selector: has(some-label)
+    source:
+      selector: blocktwo == "two"
+```
 
 ## Preventing a lockout
 As a best practice whenever you are trying to experiment with policies in any environment it is best to implement a `safe-mode` strategy by first explicitly permitting the traffic and then writing your deny rules. This helps to eliminate the chance of accidentally locking yourself out of a cluster if a misconfigured policy is applied.
@@ -94,12 +133,50 @@ It is worth mentioning, that Calico also implements a default fail-safe, which i
 
 Default egress policy for namespaced resources
 ===
-In Calico, a Workload Endpoint (WEP) is a virtual interface that is automatically assigned to VMs, containers, or other workloads running in a Kubernetes cluster. These interfaces are used to enforce network policies and to route traffic from or to your workloads. This allows the traffic originating from your workloads to be easily manipulated by Kubernetes Network Policies (KNP) or Calico policy resources. Calico also provides a host endpoint (HEP) resource that can be used to enforce a particular network behavior on host networking cards and processes that are running on the host OS.
+In Calico, a Workload Endpoint (WEP) is a virtual interface that is automatically assigned to VMs, containers, or other workloads running in a Kubernetes cluster. These interfaces are used to enforce network policies and to route traffic from or to your workloads. This allows the traffic originating from your workloads to be easily manipulated by Kubernetes NetworkPolicies or Calico policy resources. Calico also provides a host endpoint (HEP) resource that can be used to enforce a particular network behavior on host networking cards and processes that are running on the host OS.
 
 > **Note:** The default deny in the tutorial is crafted with the assumption that you will be enabling host endpoints policies, which allow for more fine-grained control over network traffic. If you are not interested in using host endpoints policies, you can use [this](https://docs.tigera.io/calico/latest/network-policy/get-started/kubernetes-default-deny) example. 
 
 
-Use the following command to restrict workload resources from reaching the internet:
+The following policy example will restrict all ingress and egress traffic for namespace resources:
+```
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: deny-app-policy
+spec:
+  order: 1001
+  namespaceSelector: has(projectcalico.org/name)
+  types:
+  - Ingress
+  - Egress
+```
+
+## Permitting the intended
+
+
+The following policy example will permit DNS flows for namespace resources:
+```
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: permit-dns
+spec:
+  order: 1001
+  namespaceSelector: has(projectcalico.org/name)
+  egress:
+  - action: Allow
+    protocol: UDP
+    destination:
+      selector: 'k8s-app == "kube-dns"'
+      ports:
+      - 53
+```
+
+
+## Multiple rules
+
+
 ```
 kubectl create -f -<<EOF
 apiVersion: projectcalico.org/v3
